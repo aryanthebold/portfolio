@@ -1,0 +1,430 @@
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;background:#000;font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');
+
+#stage{position:relative;width:100%;height:100vh;overflow:hidden;cursor:none;}
+#bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,#020008 0%,#000 70%);}
+canvas{position:absolute;inset:0;width:100%;height:100%;}
+#ui{position:absolute;inset:0;pointer-events:none;z-index:10;}
+
+/* custom cursor */
+#cursor{position:fixed;width:12px;height:12px;border-radius:50%;background:rgba(0,200,255,.6);pointer-events:none;z-index:999;transform:translate(-50%,-50%);transition:transform .12s,width .2s,height .2s;mix-blend-mode:screen;}
+#cursor-ring{position:fixed;width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,200,255,.25);pointer-events:none;z-index:998;transform:translate(-50%,-50%);transition:all .18s ease;}
+
+/* overlay info */
+.info-label{position:absolute;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(0,200,255,.45);font-family:'DM Sans',sans-serif;}
+#lbl-name{top:38px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.35em;color:rgba(0,200,255,.35);}
+#lbl-mass{bottom:60px;left:50%;transform:translateX(-50%);text-align:center;color:rgba(255,255,255,.18);font-size:11px;letter-spacing:.1em;}
+#lbl-mass span{display:block;font-size:28px;letter-spacing:-1px;color:rgba(0,200,255,.5);font-weight:300;margin-bottom:4px;}
+
+/* scroll hint */
+#scroll-hint{position:absolute;bottom:28px;right:40px;font-size:10px;letter-spacing:.15em;color:rgba(255,255,255,.2);text-transform:uppercase;animation:fade-hint 3s ease-in-out infinite;}
+@keyframes fade-hint{0%,100%{opacity:.2}50%{opacity:.5}}
+
+/* scan lines — cinematic film look */
+#scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:9;}
+
+/* vignette */
+#vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 30%,rgba(0,0,0,.8) 100%);pointer-events:none;z-index:8;}
+
+/* scroll sections below */
+.section{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;}
+.sec-inner{max-width:700px;padding:60px 40px;text-align:center;color:rgba(255,255,255,.7);}
+.sec-inner h2{font-size:clamp(28px,4vw,48px);font-weight:300;letter-spacing:2px;color:#fff;margin-bottom:20px;}
+.sec-inner p{font-size:15px;line-height:1.9;color:rgba(255,255,255,.45);}
+.glow-sep{width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,.5),transparent);margin:40px auto;}
+
+/* TON618 label on canvas */
+#ton-label{position:absolute;top:50%;left:50%;pointer-events:none;z-index:11;transform:translate(-50%,calc(-50% - 140px));text-align:center;opacity:0;transition:opacity 1s;}
+#ton-label .name{font-size:13px;letter-spacing:.4em;color:rgba(0,200,255,.6);text-transform:uppercase;font-weight:300;}
+#ton-label .sub{font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.2);margin-top:6px;}
+</style>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<div id="stage">
+  <div id="bg"></div>
+  <canvas id="star-canvas"></canvas>
+  <canvas id="bh-canvas"></canvas>
+  <div id="scanlines"></div>
+  <div id="vignette"></div>
+  <div id="ui">
+    <div class="info-label" id="lbl-name">TON 618</div>
+    <div id="ton-label">
+      <div class="name">TON 618</div>
+      <div class="sub">Ultramassive Black Hole · z = 2.219</div>
+    </div>
+    <div class="info-label" id="lbl-mass">
+      <span>6.6 × 10¹⁰ M☉</span>
+      66 Billion Solar Masses · Quasar CTA 102
+    </div>
+    <div id="scroll-hint">Scroll to explore ↓</div>
+  </div>
+</div>
+
+<div style="position:relative;background:#000;z-index:2;">
+  <div class="section">
+    <div class="sec-inner">
+      <div class="glow-sep"></div>
+      <h2>About Me</h2>
+      <p>2nd Year CSE · GL Bajaj · AKTU · Mathura<br>President, Autotons Robotics Club · Head Videographer</p>
+      <div class="glow-sep"></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sec-inner">
+      <div class="glow-sep"></div>
+      <h2>Projects</h2>
+      <p>DeepShield · The Eye · CarbonChain<br>PID Line Follower · RoboRace Bot</p>
+      <div class="glow-sep"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STAR CANVAS ────────────────────────────────────────────────────────
+const sc = document.getElementById('star-canvas');
+const sctx = sc.getContext('2d');
+function rsz(){
+  const stage = document.getElementById('stage');
+  sc.width = stage.offsetWidth; sc.height = stage.offsetHeight;
+  const bhc = document.getElementById('bh-canvas');
+  bhc.width = stage.offsetWidth; bhc.height = stage.offsetHeight;
+}
+rsz(); window.addEventListener('resize', rsz);
+
+// Stars
+const stars = [];
+for(let i=0;i<320;i++){
+  stars.push({
+    x: Math.random(), y: Math.random(),
+    r: Math.pow(Math.random(),2.5)*2.2+.2,
+    bri: Math.random()*.7+.05,
+    twinkleSpeed: Math.random()*.04+.005,
+    twinklePhase: Math.random()*Math.PI*2,
+    hue: Math.random()<.6?210:Math.random()<.5?45:0
+  });
+}
+
+let scrollY = 0;
+let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2;
+let targetMouseX = mouseX, targetMouseY = mouseY;
+
+window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+window.addEventListener('mousemove', e => { targetMouseX=e.clientX; targetMouseY=e.clientY; });
+
+// Custom cursor
+const cur = document.getElementById('cursor');
+const curR = document.getElementById('cursor-ring');
+let cx=window.innerWidth/2, cy=window.innerHeight/2;
+let crx=cx, cry=cy;
+document.addEventListener('mousemove', e => {
+  cx=e.clientX; cy=e.clientY;
+  cur.style.left=cx+'px'; cur.style.top=cy+'px';
+});
+function animCursor(){
+  crx += (cx-crx)*.12; cry += (cy-cry)*.12;
+  curR.style.left=crx+'px'; curR.style.top=cry+'px';
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+
+// ── MAIN BLACK HOLE CANVAS (2D — cinematic) ───────────────────────────
+const bhc = document.getElementById('bh-canvas');
+const ctx = bhc.getContext('2d');
+
+let t = 0;
+const stageEl = document.getElementById('stage');
+
+function hash(x,y){ return Math.abs(Math.sin(x*127.1+y*311.7)*43758.5453)%1; }
+function noise2(x,y){
+  const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;
+  const ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy);
+  return hash(ix,iy)*(1-ux)*(1-uy)+hash(ix+1,iy)*ux*(1-uy)+hash(ix,iy+1)*(1-ux)*uy+hash(ix+1,iy+1)*ux*uy;
+}
+function fbm(x,y,oct=6){
+  let v=0,a=.5;
+  for(let i=0;i<oct;i++){v+=a*noise2(x,y);x*=2.1;y*=2.1;a*=.5;}
+  return v;
+}
+
+// TON618 label fade in
+const tonLabel = document.getElementById('ton-label');
+setTimeout(()=>{ tonLabel.style.opacity='1'; }, 1200);
+
+function drawFrame(){
+  const W = bhc.width, H = bhc.height;
+  const cx2 = W/2, cy2 = H/2;
+
+  // Smooth mouse
+  mouseX += (targetMouseX - mouseX) * .06;
+  mouseY += (targetMouseY - mouseY) * .06;
+
+  // Scroll progress (0 = hero, 1+ = scrolled)
+  const scrollProg = Math.min(scrollY / (window.innerHeight*0.8), 1);
+  // Parallax: BH shifts up slightly on scroll
+  const parallaxY = scrollProg * H * 0.18;
+  // Scale: zoom in slightly as you scroll
+  const baseScale = 1 + scrollProg * 0.22;
+
+  // Mouse influence on BH position (gravitational pull feeling)
+  const mDx = (mouseX - cx2) * 0.028;
+  const mDy = (mouseY - cy2) * 0.028;
+
+  const bhX = cx2 + mDx;
+  const bhY = cy2 - parallaxY + mDy;
+  const RS = Math.min(W,H) * 0.062 * baseScale;
+
+  // Clear with ultra-dark space
+  ctx.fillStyle = '#000005';
+  ctx.fillRect(0,0,W,H);
+
+  // ── Deep space nebula glow ──────────────────────────────────────
+  // Multiple large diffuse nebulae behind the BH
+  const nebulae = [
+    {ox:-.38,oy:.12,rx:W*.55,ry:H*.35,hue:270,a:.032},
+    {ox:.28,oy:-.18,rx:W*.40,ry:H*.28,hue:200,a:.028},
+    {ox:.0,oy:.05,rx:W*.30,ry:H*.22,hue:240,a:.022},
+    {ox:-.15,oy:.22,rx:W*.25,ry:H*.18,hue:180,a:.018},
+  ];
+  for(const nb of nebulae){
+    const gx=bhX+nb.ox*W, gy=bhY+nb.oy*H;
+    const grd=ctx.createRadialGradient(gx,gy,0,gx,gy,nb.rx);
+    grd.addColorStop(0,`hsla(${nb.hue},80%,40%,${nb.a*(1+Math.sin(t*.3)*.15)})`);
+    grd.addColorStop(.5,`hsla(${nb.hue},70%,25%,${nb.a*.4})`);
+    grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd;
+    ctx.save();
+    ctx.scale(1,nb.ry/nb.rx);
+    ctx.beginPath();ctx.arc(gx,gy*(nb.rx/nb.ry),nb.rx,0,Math.PI*2);
+    ctx.fill();ctx.restore();
+  }
+
+  // ── Stars (drawn on star canvas but let's put extras here lensed) ──
+  sctx.clearRect(0,0,sc.width,sc.height);
+  const stW=sc.width, stH=sc.height;
+  for(const s of stars){
+    const sx=s.x*stW, sy=s.y*stH;
+    // Gravitational lensing: stars near BH get displaced outward
+    const dx=sx-bhX, dy=sy-bhY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const lensK = (RS*RS*1.8)/Math.max(dist*dist,RS*RS*.25);
+    const lsx = sx + dx*lensK*.5;
+    const lsy = sy + dy*lensK*.5;
+    s.twinklePhase+=s.twinkleSpeed;
+    const twk=.6+.4*Math.sin(s.twinklePhase);
+    // Fade stars that are right behind BH (they'd be eclipsed)
+    const bhDist=Math.sqrt((lsx-bhX)**2+(lsy-bhY)**2);
+    const eclipse=Math.min(bhDist/RS,1);
+    const bri=s.bri*twk*eclipse;
+    if(bri<.02) continue;
+    sctx.save();
+    sctx.globalAlpha=bri;
+    sctx.fillStyle=s.hue===210?`hsl(210,70%,88%)`
+                  :s.hue===45?`hsl(45,80%,85%)`:`hsl(0,60%,85%)`;
+    sctx.beginPath();sctx.arc(lsx,lsy,s.r,0,Math.PI*2);sctx.fill();
+    // Diffraction spikes on bright stars
+    if(s.r>1.4&&s.bri>.5){
+      sctx.globalAlpha=bri*.4;
+      sctx.strokeStyle=sctx.fillStyle;
+      sctx.lineWidth=.5;
+      const sp=s.r*5;
+      sctx.beginPath();sctx.moveTo(lsx-sp,lsy);sctx.lineTo(lsx+sp,lsy);sctx.stroke();
+      sctx.beginPath();sctx.moveTo(lsx,lsy-sp);sctx.lineTo(lsx,lsy+sp);sctx.stroke();
+    }
+    sctx.restore();
+  }
+
+  // ── Outer accretion halo ──────────────────────────────────────────
+  const haloR = RS*9;
+  const hg = ctx.createRadialGradient(bhX,bhY,RS*1.1,bhX,bhY,haloR);
+  hg.addColorStop(0,`rgba(180,80,255,.0)`);
+  hg.addColorStop(.25,`rgba(120,40,220,.06)`);
+  hg.addColorStop(.6,`rgba(60,20,120,.04)`);
+  hg.addColorStop(1,'transparent');
+  ctx.fillStyle=hg;
+  ctx.beginPath();ctx.arc(bhX,bhY,haloR,0,Math.PI*2);ctx.fill();
+
+  // ── Accretion disk (TON618: extremely massive, wide disk) ─────────
+  // Draw disk as tilted ellipse with turbulent texture layers
+  const diskTilt = .22; // inclination
+  const diskA = RS*7.5;  // semi-major
+  const diskB = diskA*diskTilt; // semi-minor (edge-on tilt)
+
+  ctx.save();
+  ctx.translate(bhX, bhY);
+
+  // Multiple disk rings with different temperatures/opacities
+  const rings = [
+    {ra:1.15,rb:.13,color:'rgba(255,200,80,',base:.38},
+    {ra:1.6, rb:.16,color:'rgba(255,140,50,',base:.28},
+    {ra:2.4, rb:.18,color:'rgba(200,80,180,',base:.2},
+    {ra:3.5, rb:.17,color:'rgba(130,50,200,',base:.14},
+    {ra:5.0, rb:.14,color:'rgba(80,30,160,', base:.09},
+    {ra:6.8, rb:.1, color:'rgba(40,15,100,', base:.05},
+  ];
+
+  for(const ring of rings){
+    const a=RS*ring.ra, b=a*diskTilt;
+    // Plasma turbulence modulation
+    const turbPhase = t*.18*ring.ra*.5;
+    for(let seg=0; seg<360; seg+=2){
+      const ang = seg*Math.PI/180;
+      const x = a*Math.cos(ang);
+      const y = b*Math.sin(ang);
+      // Keplerian rotation: inner faster
+      const orbitAng = ang + t*.35/Math.pow(ring.ra,1.5);
+      const rx2 = a*Math.cos(orbitAng);
+      const ry2 = b*Math.sin(orbitAng);
+      // Doppler: left side approaching (brighter, bluer), right receding
+      const doppler = Math.cos(orbitAng); // -1 to 1
+      const beam = Math.pow(Math.max(1+doppler*.6,.1),3.2);
+      // Turbulence
+      const turb = fbm(rx2*.012+turbPhase, ry2*.012, 4);
+      const alpha = ring.base * beam * (0.5+0.5*turb);
+      if(alpha<.005) continue;
+      ctx.fillStyle = ring.color+alpha+')';
+      ctx.beginPath();
+      ctx.arc(rx2,ry2,RS*.22,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+
+  // ── Photon sphere (bright ring at 1.5*RS) ────────────────────────
+  const pRad = RS*1.5;
+  // Multiple passes for thickness
+  for(let pass=0;pass<3;pass++){
+    const pr = pRad + pass*RS*.08;
+    const pg = ctx.createRadialGradient(bhX,bhY,pr*.88,bhX,bhY,pr*1.12+pass*RS*.05);
+    const brightMod = (1-pass*.28)*(1+Math.sin(t*.5)*.08);
+    pg.addColorStop(0,'transparent');
+    pg.addColorStop(.45,`rgba(160,200,255,${.55*brightMod})`);
+    pg.addColorStop(.55,`rgba(220,240,255,${.9*brightMod})`);
+    pg.addColorStop(.65,`rgba(160,200,255,${.5*brightMod})`);
+    pg.addColorStop(1,'transparent');
+    ctx.strokeStyle=pg;
+    ctx.lineWidth=RS*.18+pass*RS*.06;
+    ctx.beginPath();ctx.arc(bhX,bhY,pr,0,Math.PI*2);
+    ctx.stroke();
+  }
+
+  // ── Inner glow / X-ray corona ────────────────────────────────────
+  const cg = ctx.createRadialGradient(bhX,bhY,RS*.9,bhX,bhY,RS*2.8);
+  const coronaPulse = .5+.5*Math.sin(t*.7);
+  cg.addColorStop(0,`rgba(100,50,200,${.15*coronaPulse})`);
+  cg.addColorStop(.4,`rgba(60,20,160,${.1*coronaPulse})`);
+  cg.addColorStop(1,'transparent');
+  ctx.fillStyle=cg;
+  ctx.beginPath();ctx.arc(bhX,bhY,RS*2.8,0,Math.PI*2);ctx.fill();
+
+  // ── Event horizon: pure black ────────────────────────────────────
+  ctx.fillStyle='#000000';
+  ctx.beginPath();ctx.arc(bhX,bhY,RS*.97,0,Math.PI*2);ctx.fill();
+
+  // ── Shadow boundary gradient ──────────────────────────────────────
+  const sg=ctx.createRadialGradient(bhX,bhY,RS*.82,bhX,bhY,RS*1.05);
+  sg.addColorStop(0,'rgba(0,0,0,1)');
+  sg.addColorStop(.7,'rgba(0,0,0,.9)');
+  sg.addColorStop(1,'transparent');
+  ctx.fillStyle=sg;
+  ctx.beginPath();ctx.arc(bhX,bhY,RS*1.05,0,Math.PI*2);ctx.fill();
+
+  // ── Polar relativistic jets ───────────────────────────────────────
+  for(const dir of [-1,1]){
+    const jLen = RS*11;
+    const jW = RS*.13;
+    const jGrd = ctx.createLinearGradient(bhX,bhY,bhX,bhY+dir*jLen);
+    jGrd.addColorStop(0,`rgba(100,200,255,.0)`);
+    jGrd.addColorStop(.05,`rgba(100,200,255,.45)`);
+    jGrd.addColorStop(.3,`rgba(60,150,255,.25)`);
+    jGrd.addColorStop(.7,`rgba(40,100,200,.1)`);
+    jGrd.addColorStop(1,'transparent');
+    // Jet plasma blobs (moving)
+    for(let j=0;j<8;j++){
+      const jProg = ((t*.14*dir + j*.125)%1+1)%1;
+      const jY = bhY + dir*jLen*jProg;
+      const jR = jW*(1-jProg*.5)*(0.6+0.4*noise2(j*3,t*.2));
+      const ja = (.8-jProg*.7)*(0.5+0.5*noise2(j*5,t*.3));
+      ctx.globalAlpha=ja;
+      ctx.fillStyle=`rgba(80,180,255,1)`;
+      ctx.beginPath();ctx.arc(bhX,jY,jR,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    // Jet glow line
+    ctx.save();
+    ctx.globalAlpha=.35+.12*Math.sin(t*.8+dir);
+    const jPath=ctx.createLinearGradient(bhX,bhY,bhX,bhY+dir*jLen*.8);
+    jPath.addColorStop(0,'rgba(80,180,255,0)');
+    jPath.addColorStop(.1,'rgba(80,180,255,.5)');
+    jPath.addColorStop(.8,'rgba(40,120,255,.1)');
+    jPath.addColorStop(1,'transparent');
+    ctx.strokeStyle=jPath;
+    ctx.lineWidth=jW*2;
+    ctx.beginPath();ctx.moveTo(bhX,bhY);ctx.lineTo(bhX,bhY+dir*jLen*.8);ctx.stroke();
+    ctx.restore();
+  }
+
+  // ── Mouse proximity distortion glow ──────────────────────────────
+  const mdx=mouseX-bhX, mdy=mouseY-bhY;
+  const mDist=Math.sqrt(mdx*mdx+mdy*mdy);
+  const proxFactor=Math.max(0,1-mDist/(RS*6));
+  if(proxFactor>.02){
+    // Cursor near BH: extra corona flare toward cursor
+    const flareGrd=ctx.createLinearGradient(bhX,bhY,mouseX,mouseY);
+    flareGrd.addColorStop(0,`rgba(0,200,255,0)`);
+    flareGrd.addColorStop(.3,`rgba(0,200,255,${proxFactor*.18})`);
+    flareGrd.addColorStop(1,'transparent');
+    ctx.save();
+    ctx.globalAlpha=proxFactor;
+    ctx.strokeStyle=flareGrd;
+    ctx.lineWidth=proxFactor*RS*.4;
+    ctx.beginPath();ctx.moveTo(bhX,bhY);ctx.lineTo(mouseX,mouseY);ctx.stroke();
+    ctx.restore();
+    // Cursor glow near BH
+    cur.style.width=(12+proxFactor*20)+'px';
+    cur.style.height=(12+proxFactor*20)+'px';
+    curR.style.width=(36+proxFactor*30)+'px';
+    curR.style.height=(36+proxFactor*30)+'px';
+    curR.style.borderColor=`rgba(0,200,255,${.2+proxFactor*.3})`;
+  } else {
+    cur.style.width='12px'; cur.style.height='12px';
+    curR.style.width='36px'; curR.style.height='36px';
+    curR.style.borderColor='rgba(0,200,255,.25)';
+  }
+
+  // ── Lens flare from corona (cinematic) ───────────────────────────
+  const flarePulse = .4+.6*Math.pow(Math.sin(t*.22),2);
+  if(flarePulse>.5){
+    const fa = (flarePulse-.5)*2*.12;
+    // Horizontal lens streak
+    const lsG=ctx.createLinearGradient(bhX-RS*9,bhY,bhX+RS*9,bhY);
+    lsG.addColorStop(0,'transparent');
+    lsG.addColorStop(.4,`rgba(180,160,255,${fa*.4})`);
+    lsG.addColorStop(.5,`rgba(220,200,255,${fa})`);
+    lsG.addColorStop(.6,`rgba(180,160,255,${fa*.4})`);
+    lsG.addColorStop(1,'transparent');
+    ctx.fillStyle=lsG;
+    ctx.fillRect(bhX-RS*9,bhY-RS*.08,RS*18,RS*.16);
+  }
+
+  // ── Scroll: dim everything above fold, pull BH up ────────────────
+  if(scrollProg>0){
+    ctx.fillStyle=`rgba(0,0,5,${scrollProg*.65})`;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  t+=.012;
+  requestAnimationFrame(drawFrame);
+}
+drawFrame();
+
+// Show TON label
+setTimeout(()=>{
+  document.getElementById('ton-label').style.opacity='1';
+},800);
+</script>

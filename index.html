@@ -1567,30 +1567,30 @@
     <div id="cursor-dot"></div>
     <div id="cursor-ring"></div>
 
-    <div class="fc" style="top:22%;left:3%;animation-duration:5.5s;animation-delay:0s;">
+    <div class="fc" role="button" tabindex="0" aria-expanded="false" style="top:22%;left:3%;animation-duration:5.5s;animation-delay:0s;">
         <div class="fc-title">⚙️ Robotics President</div>
         <div class="fc-desc">Currently leading the Autotons club, organizing workshops, and engineering autonomous
             competition robots.</div>
     </div>
-    <div class="fc" style="top:38%;right:3%;animation-duration:6.2s;animation-delay:-2.5s;">
+    <div class="fc" role="button" tabindex="0" aria-expanded="false" style="top:38%;right:3%;animation-duration:6.2s;animation-delay:-2.5s;">
         <div class="fc-title">🌌 Space Enthusiast</div>
         <div class="fc-desc">Fascinated by astrophysics, gravitational lensing, and the sheer scale of the cosmos.</div>
     </div>
-    <div class="fc" style="top:58%;left:2.5%;animation-duration:7s;animation-delay:-4.5s;">
+    <div class="fc" role="button" tabindex="0" aria-expanded="false" style="top:58%;left:2.5%;animation-duration:7s;animation-delay:-4.5s;">
         <div class="fc-title">🐧 Kali Linux</div>
         <div class="fc-desc">Deep diving into ethical hacking, network protocols, and penetration testing.</div>
     </div>
-    <div class="fc" style="top:70%;right:3.5%;animation-duration:5.8s;animation-delay:-1.8s;">
+    <div class="fc" role="button" tabindex="0" aria-expanded="false" style="top:70%;right:3.5%;animation-duration:5.8s;animation-delay:-1.8s;">
         <div class="fc-title">🔌 Hardware</div>
         <div class="fc-desc">Designing circuits, working with ESP32s, motor drivers, and building physical computing
             solutions.</div>
     </div>
-    <div class="fc" style="top:48%;right:2%;animation-duration:6.8s;animation-delay:-3.5s;">
+    <div class="fc" role="button" tabindex="0" aria-expanded="false" style="top:48%;right:2%;animation-duration:6.8s;animation-delay:-3.5s;">
         <div class="fc-title">💻 DeepShield</div>
         <div class="fc-desc">My primary project right now—using AI to combat the rise of malicious deepfakes online.
         </div>
     </div>
-    <div class="fc" style="top:28%;left:1.5%;animation-duration:5.2s;animation-delay:-6s;">
+    <div class="fc" role="button" tabindex="0" aria-expanded="false" style="top:28%;left:1.5%;animation-duration:5.2s;animation-delay:-6s;">
         <div class="fc-title">🎬 Head Videographer</div>
         <div class="fc-desc">Directing, shooting, and editing cinematic highlight reels for the university's largest
             events.
@@ -2062,16 +2062,29 @@
             card.addEventListener('click', (e) => {
                 // Close others
                 document.querySelectorAll('.fc').forEach(other => {
-                    if (other !== card) other.classList.remove('expanded');
+                    if (other !== card) {
+                        other.classList.remove('expanded');
+                        other.setAttribute('aria-expanded', 'false');
+                    }
                 });
                 // Toggle current
-                card.classList.toggle('expanded');
+                const isExpanded = card.classList.toggle('expanded');
+                card.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
                 e.stopPropagation();
+            });
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    card.click();
+                }
             });
         });
         // Click outside to close cards
         document.addEventListener('click', () => {
-            document.querySelectorAll('.fc').forEach(card => card.classList.remove('expanded'));
+            document.querySelectorAll('.fc').forEach(card => {
+                card.classList.remove('expanded');
+                card.setAttribute('aria-expanded', 'false');
+            });
         });
 
 

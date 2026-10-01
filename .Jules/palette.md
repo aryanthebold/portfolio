@@ -1,3 +1,3 @@
-## 2024-05-18 - Improve contact form accessibility
-**Learning:** In a contact form relying entirely on placeholders, screen readers may not reliably announce the purpose of each field. This is a common pattern in minimalist designs that sacrifices accessibility for aesthetics.
-**Action:** Always complement placeholder-only designs with `aria-label` attributes (or visually hidden `<label>` elements) to ensure screen readers can announce the field purpose. In addition, add `required` attributes to enforce and announce required fields.
+## 2026-10-01 - Interactive Div Accessibility
+**Learning:** Using `div` elements for interactive expanders (like floating cards) requires extra effort to be accessible. By default, they lack keyboard focus and semantic meaning. Screen reader users miss context and keyboard-only users cannot interact with them.
+**Action:** When creating custom interactive widgets using non-semantic elements (`div`, `span`), always ensure they have `tabindex="0"`, a relevant `role` (like `button`), dynamic ARIA attributes (like `aria-expanded`), and keyboard event handlers (for Enter/Space) alongside click handlers.

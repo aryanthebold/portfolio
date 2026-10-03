@@ -2004,13 +2004,13 @@
                 </div>
                 <div class="gc cfc rvr">
                     <div class="cft">Send a message</div>
-                    <div class="cff">
+                    <form class="cff" id="contactForm">
                         <input type="text" class="cfi" placeholder="Your name" aria-label="Your name" required />
                         <input type="email" class="cfi" placeholder="Your email" aria-label="Your email" required />
                         <input type="text" class="cfi" placeholder="Subject" aria-label="Subject" />
                         <textarea class="cfi" rows="5" placeholder="What's on your mind?" aria-label="What's on your mind?" required></textarea>
                         <button class="cfsnd" id="cfsnd">Send Message →</button>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -2166,7 +2166,7 @@ void main(){
         document.querySelectorAll('.rv,.rvl,.rvr').forEach(el => ro.observe(el));
 
         // Contact Form feedback
-        document.getElementById('cfsnd').addEventListener('click', function () { this.textContent = '✓ Sent!'; this.style.background = 'linear-gradient(135deg,#10b981,#059669)'; setTimeout(() => { this.textContent = 'Send Message →'; this.style.background = 'linear-gradient(135deg,var(--cyan),var(--violet))'; }, 3000); });
+        document.getElementById('contactForm').addEventListener('submit', function (e) { e.preventDefault(); const btn = document.getElementById('cfsnd'); btn.textContent = '✓ Sent!'; btn.style.background = 'linear-gradient(135deg,#10b981,#059669)'; this.reset(); setTimeout(() => { btn.textContent = 'Send Message →'; btn.style.background = 'linear-gradient(135deg,var(--cyan),var(--violet))'; }, 3000); });
     </script>
 </body>
 

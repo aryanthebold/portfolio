@@ -5,3 +5,7 @@
 ## 2024-05-19 - Interactive div accessibility
 **Learning:** Custom interactive `div` elements acting as buttons or interactive floating cards fail on accessibility because they lack inherent keyboard interactivity and context.
 **Action:** Always add `role="button"`, `tabindex="0"`, dynamic `aria-expanded` attributes, and `keydown` event listeners for 'Enter' or 'Space' keys to ensure these custom elements are fully accessible and navigable via keyboards. Also make sure to provide visual `:focus-visible` styles.
+
+## 2024-05-20 - Form semantics and native validation
+**Learning:** Using generic `div` elements instead of `form` for data entry ignores native browser validation (like the `required` attribute) and breaks natural keyboard interaction (e.g., submitting via Enter key).
+**Action:** Always wrap data input sections in a semantic `<form>` element and handle form submission via the `submit` event rather than a `click` event on the submit button. Ensure to reset the form state visually and programmatically using `form.reset()` after a successful submission.

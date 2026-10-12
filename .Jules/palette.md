@@ -9,3 +9,7 @@
 ## 2024-05-20 - Form semantics and native validation
 **Learning:** Using generic `div` elements instead of `form` for data entry ignores native browser validation (like the `required` attribute) and breaks natural keyboard interaction (e.g., submitting via Enter key).
 **Action:** Always wrap data input sections in a semantic `<form>` element and handle form submission via the `submit` event rather than a `click` event on the submit button. Ensure to reset the form state visually and programmatically using `form.reset()` after a successful submission.
+
+## 2024-05-21 - Focus visibility in dark themes
+**Learning:** Default browser focus outlines are often nearly invisible against custom dark themes (`#03050a`), especially when interactive elements like inputs, textareas, links, and buttons rely heavily on subtle borders or gradients.
+**Action:** Extend explicit `:focus-visible` styles with a high-contrast accent color (e.g., `--cyan`) to all interactive elements (`a, button, input, textarea`), ensuring users relying on keyboard navigation have clear visual indicators of their current position.

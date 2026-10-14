@@ -9,3 +9,7 @@
 ## 2024-05-20 - Form semantics and native validation
 **Learning:** Using generic `div` elements instead of `form` for data entry ignores native browser validation (like the `required` attribute) and breaks natural keyboard interaction (e.g., submitting via Enter key).
 **Action:** Always wrap data input sections in a semantic `<form>` element and handle form submission via the `submit` event rather than a `click` event on the submit button. Ensure to reset the form state visually and programmatically using `form.reset()` after a successful submission.
+
+## 2024-10-14 - Keyboard accessibility with hidden cursors
+**Learning:** When a design intentionally hides the default mouse cursor using CSS (e.g. `cursor: none`), relying solely on a custom visual cursor (like a following div) makes it impossible for keyboard-only users to see what they are focused on if proper `:focus-visible` styles are not applied globally to all interactive elements. Also, custom interactive elements acting like popups must be dismissible via the Escape key.
+**Action:** Always ensure a robust, high-contrast `:focus-visible` style is defined for all interactive elements (`a`, `button`, `input`, `textarea`, and custom widgets), especially when the default cursor is hidden. Ensure custom modal or popup elements can be closed with the Escape key. Add `aria-hidden="true"` to custom cursor elements so they do not clutter screen reader output.

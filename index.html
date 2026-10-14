@@ -61,7 +61,11 @@
             cursor: none !important;
         }
 
-        .fc:focus-visible {
+        .fc:focus-visible,
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        textarea:focus-visible {
             outline: 2px solid var(--cyan);
             outline-offset: 4px;
         }
@@ -1564,14 +1568,14 @@
         </path>
     </svg>
 
-    <canvas id="bh-canvas"></canvas>
-    <canvas id="neb-canvas"></canvas>
-    <canvas id="flo-canvas"></canvas>
-    <div id="stars-el"></div>
-    <div class="grid-bg"></div>
+    <canvas id="bh-canvas" aria-hidden="true"></canvas>
+    <canvas id="neb-canvas" aria-hidden="true"></canvas>
+    <canvas id="flo-canvas" aria-hidden="true"></canvas>
+    <div id="stars-el" aria-hidden="true"></div>
+    <div class="grid-bg" aria-hidden="true"></div>
 
-    <div id="cursor-dot"></div>
-    <div id="cursor-ring"></div>
+    <div id="cursor-dot" aria-hidden="true"></div>
+    <div id="cursor-ring" aria-hidden="true"></div>
 
     <div class="fc" tabindex="0" role="button" aria-expanded="false" style="top:22%;left:3%;animation-duration:5.5s;animation-delay:0s;">
         <div class="fc-title">⚙️ Robotics President</div>
@@ -2085,6 +2089,16 @@
                 card.classList.remove('expanded');
                 card.setAttribute('aria-expanded', 'false');
             });
+        });
+
+        // Escape key to close cards
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.fc.expanded').forEach(card => {
+                    card.classList.remove('expanded');
+                    card.setAttribute('aria-expanded', 'false');
+                });
+            }
         });
 
         // Keyboard Interaction for Floating Cards

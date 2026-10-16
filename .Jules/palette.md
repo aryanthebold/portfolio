@@ -9,3 +9,7 @@
 ## 2024-05-20 - Form semantics and native validation
 **Learning:** Using generic `div` elements instead of `form` for data entry ignores native browser validation (like the `required` attribute) and breaks natural keyboard interaction (e.g., submitting via Enter key).
 **Action:** Always wrap data input sections in a semantic `<form>` element and handle form submission via the `submit` event rather than a `click` event on the submit button. Ensure to reset the form state visually and programmatically using `form.reset()` after a successful submission.
+
+## 2024-05-21 - Focus visibility and form submission feedback
+**Learning:** Custom CSS resets or generic styles can inadvertently suppress native focus indicators for interactive elements like buttons, links, and inputs. Furthermore, users often lack confidence when a form lacks immediate visual feedback upon submission, leading to potential duplicate submissions and confusion.
+**Action:** Always verify that interactive elements retain clear `:focus-visible` styles, especially when custom styles are heavily applied. Provide immediate visual feedback (such as a 'Sending...' state and disabling the submit button) upon form submission to improve user experience and prevent multiple submissions.

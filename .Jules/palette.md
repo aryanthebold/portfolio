@@ -9,3 +9,7 @@
 ## 2024-05-20 - Form semantics and native validation
 **Learning:** Using generic `div` elements instead of `form` for data entry ignores native browser validation (like the `required` attribute) and breaks natural keyboard interaction (e.g., submitting via Enter key).
 **Action:** Always wrap data input sections in a semantic `<form>` element and handle form submission via the `submit` event rather than a `click` event on the submit button. Ensure to reset the form state visually and programmatically using `form.reset()` after a successful submission.
+
+## 2024-05-21 - Comprehensive focus-visible styles
+**Learning:** Default browser focus rings are inconsistent and often insufficient for clear keyboard navigation, particularly in dark or styled themes. Only styling custom components (like `.fc`) leaves standard interactive elements (links, buttons, inputs) inaccessible.
+**Action:** Always extend explicit `:focus-visible` styles to all natively interactive elements (`a, button, input, textarea`) alongside custom components to ensure a consistent, accessible experience for keyboard users without affecting mouse users.

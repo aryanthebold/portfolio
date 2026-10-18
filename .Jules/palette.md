@@ -9,3 +9,7 @@
 ## 2024-05-20 - Form semantics and native validation
 **Learning:** Using generic `div` elements instead of `form` for data entry ignores native browser validation (like the `required` attribute) and breaks natural keyboard interaction (e.g., submitting via Enter key).
 **Action:** Always wrap data input sections in a semantic `<form>` element and handle form submission via the `submit` event rather than a `click` event on the submit button. Ensure to reset the form state visually and programmatically using `form.reset()` after a successful submission.
+
+## 2024-05-21 - Ambiguous link text accessibility
+**Learning:** Repetitive link texts like "View Project" or "Read More" without additional context create a confusing experience for screen reader users, as the links are read out of context and lack distinguishing information.
+**Action:** Always provide descriptive context using `aria-label` attributes on generic links. For example, add the specific item or project name (`aria-label="View project: DeepShield"`) so screen readers provide the right context while maintaining the visual brevity.

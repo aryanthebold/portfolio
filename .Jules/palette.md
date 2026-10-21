@@ -9,3 +9,7 @@
 ## 2024-05-20 - Form semantics and native validation
 **Learning:** Using generic `div` elements instead of `form` for data entry ignores native browser validation (like the `required` attribute) and breaks natural keyboard interaction (e.g., submitting via Enter key).
 **Action:** Always wrap data input sections in a semantic `<form>` element and handle form submission via the `submit` event rather than a `click` event on the submit button. Ensure to reset the form state visually and programmatically using `form.reset()` after a successful submission.
+
+## 2024-05-21 - Custom cursors and focus visibility
+**Learning:** Sites that use custom cursors often hide the default mouse pointer globally using `cursor: none !important;`. This not only impacts mouse users but disproportionately affects keyboard navigators if the site relies on browser default focus rings, which might be too subtle or explicitly removed elsewhere.
+**Action:** When a global `cursor: none` is applied, it is absolutely critical to provide explicit, high-contrast `:focus-visible` styles for all interactive elements (`a`, `button`, input fields) to ensure keyboard users can track their location on the page. Extend existing focus styles rather than creating new ones when possible to maintain design consistency.
